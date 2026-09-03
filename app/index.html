@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="A clear view of project ownership, activity, status, and priority.">
+  <title>Project Pulse</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <header class="site-header">
+    <div class="page-shell">
+      <p class="eyebrow">Contributor workspace</p>
+      <h1>Project Pulse</h1>
+      <p class="intro">A quick read on what is moving, who is driving it, and where attention is needed next.</p>
+    </div>
+  </header>
+
+  <main class="page-shell" id="main-content">
+    <section aria-labelledby="projects-heading">
+      <div class="section-heading">
+        <div>
+          <p class="eyebrow">Current view</p>
+          <h2 id="projects-heading">Projects</h2>
+        </div>
+        <p id="project-count" class="project-count" aria-live="polite">Loading projects...</p>
+      </div>
+
+      <div id="dashboard-status" class="state state-loading" role="status" aria-live="polite">
+        Loading project updates...
+      </div>
+      <div id="dashboard" class="dashboard" aria-live="polite" aria-busy="true"></div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="page-shell">Project Pulse · A shared view for thoughtful project work.</div>
+  </footer>
+
+  <script>
+    const dashboard = document.querySelector('#dashboard');
+    const dashboardStatus = document.querySelector('#dashboard-status');
+    const projectCount = document.querySelector('#project-count');
+    const requiredFields = ['name', 'owner', 'status', 'recentActivity', 'priority'];
+
+    function setState(message, stateClass) {
+      dashboardStatus.textContent = message;
+      dashboardStatus.className = `state ${stateClass}`;
+      dashboardStatus.hidden = false;
+    }
+
+    function createDetail(label, value, className) {
+      const wrapper = document.createElement('div');
+      wrapper.className = `detail ${className}`;
+      const term = document.createElement('dt');
+      term.textContent = label;
+      const description = document.createElement('dd');
+      description.textContent = value;
+      wrapper.append(term, description);
+      return wrapper;
+    }
+
+    function createProjectCard(project) {
+      const article = document.createElement('article');
+      article.className = 'project-card';
+      article.dataset.status = String(project.status).toLowerCase().replace(/\s+/g, '-');
+      article.dataset.priority = String(project.priority).toLowerCase().replace(/\s+/g, '-');
+
+      const heading = document.createElement('h3');
+      heading.textContent = project.name;
+
+      const details = document.createElement('dl');
+      details.append(
+        createDetail('Owner', project.owner, 'detail-owner'),
+        createDetail('Status', project.status, 'detail-status'),
+        createDetail('Recent activity', project.recentActivity, 'detail-activity'),
+        createDetail('Priority', project.priority, 'detail-priority')
+      );
+
+      article.append(heading, details);
+      return article;
+    }
+
+    function renderProjects(projects) {
+      dashboard.replaceChildren(...projects.map(createProjectCard));
+      dashboard.setAttribute('aria-busy', 'false');
+      projectCount.textContent = `${projects.length} ${projects.length === 1 ? 'project' : 'projects'}`;
+      dashboardStatus.hidden = true;
+    }
+
+    async function loadProjects() {
+      try {
+        const response = await fetch('project-data.json');
+        if (!response.ok) {
+          throw new Error(`Project data request failed with ${response.status}`);
+        }
+        const data = await response.json();
+        if (!Array.isArray(data.projects)) {
+          throw new Error('Project data must contain a projects array');
+        }
+        const invalidProject = data.projects.find((project) =>
+          !project || requiredFields.some((field) => typeof project[field] !== 'string' || !project[field].trim())
+        );
+        if (invalidProject) {
+          throw new Error('A project record is missing a required text field');
+        }
+        if (data.projects.length === 0) {
+          dashboard.setAttribute('aria-busy', 'false');
+          projectCount.textContent = '0 projects';
+          setState('No projects are available yet.', 'state-empty');
+          return;
+        }
+        renderProjects(data.projects);
+      } catch (error) {
+        dashboard.setAttribute('aria-busy', 'false');
+        projectCount.textContent = 'Unable to load';
+        setState('Project updates could not be loaded. Please try again later.', 'state-error');
+        console.error(error);
+      }
+    }
+
+    loadProjects();
+  </script>
+</body>
+</html>

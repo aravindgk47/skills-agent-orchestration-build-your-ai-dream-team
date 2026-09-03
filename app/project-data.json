@@ -1,0 +1,39 @@
+{
+  "projects": [
+    {
+      "name": "Contributor onboarding",
+      "owner": "Maya Chen",
+      "status": "On track",
+      "recentActivity": "Published the first-time contributor checklist yesterday.",
+      "priority": "High"
+    },
+    {
+      "name": "API reliability workstream",
+      "owner": "Jon Bell",
+      "status": "At risk",
+      "recentActivity": "Load-test results are being reviewed with the platform team.",
+      "priority": "High"
+    },
+    {
+      "name": "Design system refresh",
+      "owner": "Aisha Patel",
+      "status": "In progress",
+      "recentActivity": "Form and table patterns are ready for team feedback.",
+      "priority": "Medium"
+    },
+    {
+      "name": "Quarterly documentation audit",
+      "owner": "Luis Romero",
+      "status": "Planned",
+      "recentActivity": "Scope was agreed during the planning session on Monday.",
+      "priority": "Low"
+    },
+    {
+      "name": "Mobile notification improvements",
+      "owner": "Samira Okafor",
+      "status": "Blocked",
+      "recentActivity": "Waiting on the provider migration window before testing can resume.",
+      "priority": "Medium"
+    }
+  ]
+}
